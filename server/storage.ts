@@ -1,38 +1,99 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import {
+  ipos,
+  watchlist,
+  type Ipo,
+  type InsertIpo,
+  type WatchlistItem,
+  type InsertWatchlistItem,
+  type WatchlistResponse,
+} from "@shared/schema";
+import { eq, and, desc } from "drizzle-orm";
+import { authStorage, IAuthStorage } from "./replit_integrations/auth/storage";
 
-// modify the interface with any CRUD methods
-// you might need
+export interface IStorage extends IAuthStorage {
+  // IPOs
+  getIpos(status?: string, sector?: string): Promise<Ipo[]>;
+  getIpo(id: number): Promise<Ipo | undefined>;
+  createIpo(ipo: InsertIpo): Promise<Ipo>;
 
-export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Watchlist
+  getWatchlist(userId: string): Promise<WatchlistResponse[]>;
+  addToWatchlist(userId: string, ipoId: number): Promise<WatchlistItem>;
+  removeFromWatchlist(userId: string, id: number): Promise<void>;
+  getWatchlistItem(userId: string, ipoId: number): Promise<WatchlistItem | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class DatabaseStorage implements IStorage {
+  // Inherit auth methods
+  getUser = authStorage.getUser;
+  upsertUser = authStorage.upsertUser;
 
-  constructor() {
-    this.users = new Map();
+  // IPOs
+  async getIpos(status?: string, sector?: string): Promise<Ipo[]> {
+    let query = db.select().from(ipos);
+    const conditions = [];
+    if (status) conditions.push(eq(ipos.status, status));
+    if (sector) conditions.push(eq(ipos.sector, sector));
+
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions)).orderBy(desc(ipos.expectedDate));
+    }
+    return await query.orderBy(desc(ipos.expectedDate));
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getIpo(id: number): Promise<Ipo | undefined> {
+    const [ipo] = await db.select().from(ipos).where(eq(ipos.id, id));
+    return ipo;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createIpo(insertIpo: InsertIpo): Promise<Ipo> {
+    const [ipo] = await db.insert(ipos).values(insertIpo).returning();
+    return ipo;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  // Watchlist
+  async getWatchlist(userId: string): Promise<WatchlistResponse[]> {
+    const items = await db
+      .select({
+        watchlist: watchlist,
+        ipo: ipos,
+      })
+      .from(watchlist)
+      .innerJoin(ipos, eq(watchlist.ipoId, ipos.id))
+      .where(eq(watchlist.userId, userId));
+
+    return items.map((item) => ({
+      ...item.watchlist,
+      ipo: item.ipo,
+    }));
+  }
+
+  async getWatchlistItem(userId: string, ipoId: number): Promise<WatchlistItem | undefined> {
+    const [item] = await db
+        .select()
+        .from(watchlist)
+        .where(and(eq(watchlist.userId, userId), eq(watchlist.ipoId, ipoId)));
+    return item;
+  }
+
+  async addToWatchlist(userId: string, ipoId: number): Promise<WatchlistItem> {
+    // check if exists
+    const existing = await this.getWatchlistItem(userId, ipoId);
+    if (existing) return existing;
+
+    const [item] = await db
+      .insert(watchlist)
+      .values({ userId, ipoId })
+      .returning();
+    return item;
+  }
+
+  async removeFromWatchlist(userId: string, id: number): Promise<void> {
+    await db
+      .delete(watchlist)
+      .where(and(eq(watchlist.id, id), eq(watchlist.userId, userId)));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
