@@ -2,11 +2,17 @@ import { db } from "./db";
 import {
   ipos,
   watchlist,
+  alertPreferences,
+  alertLogs,
   type Ipo,
   type InsertIpo,
   type WatchlistItem,
   type InsertWatchlistItem,
   type WatchlistResponse,
+  type AlertPreferences,
+  type InsertAlertPreferences,
+  type AlertLog,
+  type InsertAlertLog,
 } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { authStorage, IAuthStorage } from "./replit_integrations/auth/storage";
@@ -26,6 +32,15 @@ export interface IStorage extends IAuthStorage {
   addToWatchlist(userId: string, ipoId: number): Promise<WatchlistItem>;
   removeFromWatchlist(userId: string, id: number): Promise<void>;
   getWatchlistItem(userId: string, ipoId: number): Promise<WatchlistItem | undefined>;
+
+  // Alert Preferences
+  getAlertPreferences(userId: string): Promise<AlertPreferences | undefined>;
+  upsertAlertPreferences(userId: string, prefs: Partial<InsertAlertPreferences>): Promise<AlertPreferences>;
+  getAllUsersWithAlerts(): Promise<AlertPreferences[]>;
+
+  // Alert Logs
+  createAlertLog(log: InsertAlertLog): Promise<AlertLog>;
+  getAlertLogs(userId?: string, limit?: number): Promise<AlertLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -137,6 +152,68 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(watchlist)
       .where(and(eq(watchlist.id, id), eq(watchlist.userId, userId)));
+  }
+
+  // Alert Preferences
+  async getAlertPreferences(userId: string): Promise<AlertPreferences | undefined> {
+    const [prefs] = await db
+      .select()
+      .from(alertPreferences)
+      .where(eq(alertPreferences.userId, userId));
+    return prefs;
+  }
+
+  async upsertAlertPreferences(userId: string, prefs: Partial<InsertAlertPreferences>): Promise<AlertPreferences> {
+    const existing = await this.getAlertPreferences(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(alertPreferences)
+        .set({
+          ...prefs,
+          updatedAt: new Date(),
+        })
+        .where(eq(alertPreferences.userId, userId))
+        .returning();
+      return updated;
+    }
+    
+    const [created] = await db
+      .insert(alertPreferences)
+      .values({ userId, ...prefs })
+      .returning();
+    return created;
+  }
+
+  async getAllUsersWithAlerts(): Promise<AlertPreferences[]> {
+    return await db
+      .select()
+      .from(alertPreferences)
+      .where(eq(alertPreferences.emailEnabled, true));
+  }
+
+  // Alert Logs
+  async createAlertLog(log: InsertAlertLog): Promise<AlertLog> {
+    const [created] = await db
+      .insert(alertLogs)
+      .values(log)
+      .returning();
+    return created;
+  }
+
+  async getAlertLogs(userId?: string, limit: number = 50): Promise<AlertLog[]> {
+    let query = db.select().from(alertLogs);
+    
+    if (userId) {
+      return await query
+        .where(eq(alertLogs.userId, userId))
+        .orderBy(desc(alertLogs.createdAt))
+        .limit(limit);
+    }
+    
+    return await query
+      .orderBy(desc(alertLogs.createdAt))
+      .limit(limit);
   }
 }
 

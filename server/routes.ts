@@ -3,11 +3,14 @@ import type { Server } from "http";
 import { createServer } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { insertIpoSchema } from "@shared/schema";
+import { insertIpoSchema, insertAlertPreferencesSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { z } from "zod";
 import { calculateIpoScore } from "./services/scoring";
 import { scrapeAndTransformIPOs, testScraper } from "./services/scraper";
+import { analyzeIpo } from "./services/ai-analysis";
+import { initTelegramBot, verifyTelegramChatId, sendIpoAlert } from "./services/telegram";
+import { sendIpoEmailAlert } from "./services/email";
 
 export async function registerRoutes(
   httpServer: Server, // Accept httpServer as parameter
@@ -154,6 +157,138 @@ export async function registerRoutes(
     
     res.json(stats);
   });
+
+  // AI Analysis Routes
+  app.post("/api/ipos/:id/analyze", requireAuth, async (req, res) => {
+    try {
+      const ipo = await storage.getIpo(Number(req.params.id));
+      if (!ipo) {
+        return res.status(404).json({ message: "IPO not found" });
+      }
+
+      const analysis = await analyzeIpo(ipo);
+      
+      // Update IPO with AI analysis
+      const updated = await storage.updateIpo(ipo.id, {
+        aiSummary: analysis.summary,
+        aiRecommendation: analysis.recommendation,
+      });
+
+      res.json({
+        success: true,
+        analysis,
+        ipo: updated,
+      });
+    } catch (error) {
+      console.error("AI analysis error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Analysis failed" 
+      });
+    }
+  });
+
+  // Alert Preferences Routes
+  app.get("/api/alerts/preferences", requireAuth, async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const prefs = await storage.getAlertPreferences(userId);
+    res.json(prefs || {
+      emailEnabled: false,
+      telegramEnabled: false,
+      alertOnNewIpo: true,
+      alertOnGmpChange: true,
+      alertOnOpenDate: true,
+      alertOnWatchlistOnly: false,
+    });
+  });
+
+  app.post("/api/alerts/preferences", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const validatedData = insertAlertPreferencesSchema.partial().parse(req.body);
+      const prefs = await storage.upsertAlertPreferences(userId, validatedData);
+      res.json(prefs);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.post("/api/alerts/verify-telegram", requireAuth, async (req, res) => {
+    try {
+      const { chatId } = req.body;
+      if (!chatId) {
+        return res.status(400).json({ success: false, message: "Chat ID required" });
+      }
+
+      const verified = await verifyTelegramChatId(chatId);
+      if (verified) {
+        const userId = (req.user as any).claims.sub;
+        await storage.upsertAlertPreferences(userId, { telegramChatId: chatId });
+        res.json({ success: true, message: "Telegram connected successfully" });
+      } else {
+        res.status(400).json({ success: false, message: "Invalid chat ID or bot not started" });
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Verification failed" });
+    }
+  });
+
+  app.get("/api/alerts/logs", requireAuth, async (req, res) => {
+    const userId = (req.user as any).claims.sub;
+    const logs = await storage.getAlertLogs(userId, 50);
+    res.json(logs);
+  });
+
+  // Test alert sending (admin only)
+  app.post("/api/admin/test-alert/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const ipo = await storage.getIpo(Number(req.params.id));
+      if (!ipo) {
+        return res.status(404).json({ message: "IPO not found" });
+      }
+
+      const prefs = await storage.getAlertPreferences(userId);
+      const results = { email: false, telegram: false };
+
+      if (prefs?.emailEnabled && prefs.email) {
+        results.email = await sendIpoEmailAlert(prefs.email, ipo, "new_ipo");
+        await storage.createAlertLog({
+          userId,
+          ipoId: ipo.id,
+          alertType: "new_ipo",
+          channel: "email",
+          status: results.email ? "sent" : "failed",
+          message: `Test alert for ${ipo.companyName}`,
+        });
+      }
+
+      if (prefs?.telegramEnabled && prefs.telegramChatId) {
+        results.telegram = await sendIpoAlert(prefs.telegramChatId, ipo, "new_ipo");
+        await storage.createAlertLog({
+          userId,
+          ipoId: ipo.id,
+          alertType: "new_ipo",
+          channel: "telegram",
+          status: results.telegram ? "sent" : "failed",
+          message: `Test alert for ${ipo.companyName}`,
+        });
+      }
+
+      res.json({ success: true, results });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Alert failed" 
+      });
+    }
+  });
+
+  // Initialize Telegram bot
+  initTelegramBot();
 
   // Seed Data
   await seedDatabase();

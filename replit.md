@@ -106,11 +106,46 @@ Preferred communication style: Simple, everyday language.
 - Test connection to data source
 - Manually trigger data sync
 
+## AI Analysis
+
+### OpenAI Integration (`server/services/ai-analysis.ts`)
+- Uses Replit AI Integrations (gpt-4o-mini model)
+- Analyzes IPO fundamentals, valuation, and governance
+- Generates summary, recommendation, and key insights
+- Stores analysis in `aiSummary` and `aiRecommendation` fields
+
+### AI Analysis Endpoint
+- `POST /api/ipos/:id/analyze` - Generate AI analysis for specific IPO
+
+## Alert Notifications
+
+### Email Alerts (`server/services/email.ts`)
+- Uses Resend API for email delivery
+- Requires `RESEND_API_KEY` environment variable
+- Sends formatted HTML emails with IPO details and scores
+
+### Telegram Alerts (`server/services/telegram.ts`)
+- Uses Telegram Bot API (node-telegram-bot-api)
+- Requires `TELEGRAM_BOT_TOKEN` environment variable
+- Sends formatted messages with HTML parsing
+
+### Alert Preferences API
+- `GET /api/alerts/preferences` - Get user alert settings
+- `POST /api/alerts/preferences` - Update alert settings
+- `POST /api/alerts/verify-telegram` - Verify Telegram chat ID
+- `GET /api/alerts/logs` - Get alert history
+
+### Alert Types
+- New IPO announcements
+- GMP (Grey Market Premium) changes
+- IPO opening date reminders
+- AI analysis completion
+
 ## External Dependencies
 
 ### Database
 - **PostgreSQL**: Primary data store (connection via `DATABASE_URL` environment variable)
-- **Tables**: `users`, `sessions`, `ipos`, `watchlist`
+- **Tables**: `users`, `sessions`, `ipos`, `watchlist`, `alert_preferences`, `alert_logs`
 
 ### Authentication
 - **Replit Auth**: OpenID Connect provider (`ISSUER_URL`, `REPL_ID` environment variables)
@@ -130,3 +165,5 @@ Preferred communication style: Simple, everyday language.
 - `SESSION_SECRET` - Secret for session encryption
 - `REPL_ID` - Replit environment identifier (auto-set on Replit)
 - `ISSUER_URL` - OpenID Connect issuer (defaults to Replit's OIDC)
+- `RESEND_API_KEY` - (Optional) Resend API key for email alerts
+- `TELEGRAM_BOT_TOKEN` - (Optional) Telegram bot token for Telegram alerts

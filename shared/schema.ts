@@ -5,6 +5,7 @@ import { z } from "zod";
 import { users } from "./models/auth";
 
 export * from "./models/auth";
+export * from "./models/chat";
 
 // === TABLE DEFINITIONS ===
 export const ipos = pgTable("ipos", {
@@ -74,6 +75,33 @@ export const watchlist = pgTable("watchlist", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const alertPreferences = pgTable("alert_preferences", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id).unique(),
+  emailEnabled: boolean("email_enabled").default(false),
+  email: text("email"),
+  telegramEnabled: boolean("telegram_enabled").default(false),
+  telegramChatId: text("telegram_chat_id"),
+  alertOnNewIpo: boolean("alert_on_new_ipo").default(true),
+  alertOnGmpChange: boolean("alert_on_gmp_change").default(true),
+  alertOnOpenDate: boolean("alert_on_open_date").default(true),
+  alertOnWatchlistOnly: boolean("alert_on_watchlist_only").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const alertLogs = pgTable("alert_logs", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").references(() => users.id),
+  ipoId: integer("ipo_id").references(() => ipos.id),
+  alertType: text("alert_type").notNull(), // 'new_ipo', 'gmp_change', 'open_date', 'ai_analysis'
+  channel: text("channel").notNull(), // 'email', 'telegram'
+  status: text("status").notNull(), // 'sent', 'failed', 'pending'
+  message: text("message"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // === RELATIONS ===
 export const iposRelations = relations(ipos, ({ many }) => ({
   watchlistItems: many(watchlist),
@@ -93,12 +121,18 @@ export const watchlistRelations = relations(watchlist, ({ one }) => ({
 // === BASE SCHEMAS ===
 export const insertIpoSchema = createInsertSchema(ipos).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertWatchlistSchema = createInsertSchema(watchlist).omit({ id: true, createdAt: true });
+export const insertAlertPreferencesSchema = createInsertSchema(alertPreferences).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertAlertLogSchema = createInsertSchema(alertLogs).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 export type Ipo = typeof ipos.$inferSelect;
 export type InsertIpo = z.infer<typeof insertIpoSchema>;
 export type WatchlistItem = typeof watchlist.$inferSelect;
 export type InsertWatchlistItem = z.infer<typeof insertWatchlistSchema>;
+export type AlertPreferences = typeof alertPreferences.$inferSelect;
+export type InsertAlertPreferences = z.infer<typeof insertAlertPreferencesSchema>;
+export type AlertLog = typeof alertLogs.$inferSelect;
+export type InsertAlertLog = z.infer<typeof insertAlertLogSchema>;
 
 // API Responses
 export type IpoResponse = Ipo;

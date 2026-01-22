@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { AlertSettings } from "@/components/AlertSettings";
 
 export default function Settings() {
   const { user, logout } = useAuth();
@@ -95,6 +96,19 @@ export default function Settings() {
             </div>
             <Switch checked disabled data-testid="switch-darkmode" />
           </div>
+        </div>
+      </div>
+
+      <div className="premium-card">
+        <div className="p-6 border-b border-white/[0.05]">
+          <h2 className="text-lg font-display font-bold text-white flex items-center gap-2">
+            <Bell className="h-5 w-5 text-purple-400" />
+            Alert Notifications
+          </h2>
+          <p className="text-sm text-white/40 mt-1">Get notified about IPOs via email and Telegram</p>
+        </div>
+        <div className="p-6">
+          <AlertSettings />
         </div>
       </div>
 

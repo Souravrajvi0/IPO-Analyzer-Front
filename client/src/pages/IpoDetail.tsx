@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useRoute, Link } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { useIpo, useAddToWatchlist, useWatchlist } from "@/hooks/use-ipos";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +24,13 @@ import {
   CheckCircle2,
   XCircle,
   Percent,
-  Building2
+  Building2,
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 function ScoreBar({ label, score, icon: Icon }: { label: string; score: number | null; icon: React.ElementType }) {
   if (score === null || score === undefined) return null;
@@ -194,6 +199,20 @@ export default function IpoDetail() {
       }
     });
   };
+
+  const analyzeIpo = useMutation({
+    mutationFn: async (ipoId: number) => {
+      const res = await apiRequest("POST", `/api/ipos/${ipoId}/analyze`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ipos", id] });
+      toast({ title: "AI Analysis Complete", description: "Analysis has been generated" });
+    },
+    onError: () => {
+      toast({ title: "Analysis Failed", description: "Could not generate AI analysis", variant: "destructive" });
+    },
+  });
 
   const getStatusStyles = (status: string) => {
     switch(status.toLowerCase()) {
@@ -389,6 +408,59 @@ export default function IpoDetail() {
             <p className="text-white/50 leading-relaxed text-base">
               {ipo.description || "Detailed prospectus information will be available closer to the offering date."}
             </p>
+          </div>
+
+          {/* AI Analysis Section */}
+          <div className="premium-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-display font-bold text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-400" />
+                AI Analysis
+              </h3>
+              {!ipo.aiSummary && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => analyzeIpo.mutate(ipo.id)}
+                  disabled={analyzeIpo.isPending}
+                  className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                  data-testid="button-generate-ai-analysis"
+                >
+                  {analyzeIpo.isPending ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                  ) : (
+                    <><Sparkles className="mr-2 h-4 w-4" /> Generate Analysis</>
+                  )}
+                </Button>
+              )}
+            </div>
+            
+            {ipo.aiSummary ? (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-white/60 mb-2">Summary</h4>
+                  <p className="text-white/70 leading-relaxed">{ipo.aiSummary}</p>
+                </div>
+                {ipo.aiRecommendation && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-white/60 mb-2">Recommendation</h4>
+                    <p className="text-white/70 leading-relaxed">{ipo.aiRecommendation}</p>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-white/[0.05]">
+                  <p className="text-xs text-white/30 italic">
+                    AI-generated analysis for screening purposes only. Not investment advice.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <Sparkles className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                <p className="text-white/40 text-sm">
+                  Click "Generate Analysis" to get AI-powered insights about this IPO
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
