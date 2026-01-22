@@ -7,6 +7,7 @@ import { insertIpoSchema } from "@shared/schema";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { z } from "zod";
 import { calculateIpoScore } from "./services/scoring";
+import { scrapeAndTransformIPOs, testScraper } from "./services/scraper";
 
 export async function registerRoutes(
   httpServer: Server, // Accept httpServer as parameter
@@ -76,6 +77,75 @@ export async function registerRoutes(
     const userId = (req.user as any).claims.sub;
     await storage.removeFromWatchlist(userId, Number(req.params.id));
     res.status(204).send();
+  });
+
+  // Admin/Sync Routes
+  app.get("/api/admin/sync/test", async (req, res) => {
+    try {
+      const result = await testScraper();
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  app.post("/api/admin/sync", async (req, res) => {
+    try {
+      console.log("🔄 Starting IPO data sync from Chittorgarh...");
+      
+      const scrapedIpos = await scrapeAndTransformIPOs();
+      
+      let created = 0;
+      let updated = 0;
+      
+      for (const ipo of scrapedIpos) {
+        const existing = await storage.getIpoBySymbol(ipo.symbol);
+        await storage.upsertIpo(ipo);
+        
+        if (existing) {
+          updated++;
+        } else {
+          created++;
+        }
+      }
+      
+      console.log(`✅ Sync complete: ${created} created, ${updated} updated`);
+      
+      res.json({
+        success: true,
+        message: `Synced ${scrapedIpos.length} IPOs`,
+        created,
+        updated,
+        total: scrapedIpos.length,
+      });
+    } catch (error) {
+      console.error("Sync failed:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Sync failed" 
+      });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    const count = await storage.getIpoCount();
+    const ipos = await storage.getIpos();
+    
+    const stats = {
+      total: count,
+      upcoming: ipos.filter(i => i.status === "upcoming").length,
+      open: ipos.filter(i => i.status === "open").length,
+      closed: ipos.filter(i => i.status === "closed").length,
+      withScores: ipos.filter(i => i.overallScore !== null).length,
+      avgScore: ipos.filter(i => i.overallScore !== null)
+        .reduce((sum, i) => sum + (i.overallScore || 0), 0) / 
+        (ipos.filter(i => i.overallScore !== null).length || 1),
+    };
+    
+    res.json(stats);
   });
 
   // Seed Data

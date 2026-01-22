@@ -15,7 +15,11 @@ export interface IStorage extends IAuthStorage {
   // IPOs
   getIpos(status?: string, sector?: string): Promise<Ipo[]>;
   getIpo(id: number): Promise<Ipo | undefined>;
+  getIpoBySymbol(symbol: string): Promise<Ipo | undefined>;
   createIpo(ipo: InsertIpo): Promise<Ipo>;
+  upsertIpo(ipo: InsertIpo): Promise<Ipo>;
+  updateIpo(id: number, data: Partial<InsertIpo>): Promise<Ipo | undefined>;
+  getIpoCount(): Promise<number>;
 
   // Watchlist
   getWatchlist(userId: string): Promise<WatchlistResponse[]>;
@@ -47,9 +51,49 @@ export class DatabaseStorage implements IStorage {
     return ipo;
   }
 
+  async getIpoBySymbol(symbol: string): Promise<Ipo | undefined> {
+    const [ipo] = await db.select().from(ipos).where(eq(ipos.symbol, symbol));
+    return ipo;
+  }
+
   async createIpo(insertIpo: InsertIpo): Promise<Ipo> {
     const [ipo] = await db.insert(ipos).values(insertIpo).returning();
     return ipo;
+  }
+
+  async upsertIpo(insertIpo: InsertIpo): Promise<Ipo> {
+    const existing = await this.getIpoBySymbol(insertIpo.symbol);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(ipos)
+        .set({
+          ...insertIpo,
+          updatedAt: new Date(),
+        })
+        .where(eq(ipos.id, existing.id))
+        .returning();
+      return updated;
+    }
+    
+    return this.createIpo(insertIpo);
+  }
+
+  async updateIpo(id: number, data: Partial<InsertIpo>): Promise<Ipo | undefined> {
+    const [updated] = await db
+      .update(ipos)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(ipos.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getIpoCount(): Promise<number> {
+    const result = await db.select().from(ipos);
+    return result.length;
   }
 
   // Watchlist
