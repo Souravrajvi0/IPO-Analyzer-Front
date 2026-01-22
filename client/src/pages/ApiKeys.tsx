@@ -1,15 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Plus, Eye, EyeOff, Copy, Trash2, Key } from "lucide-react";
+import { Plus, Eye, EyeOff, Copy, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ApiKey {
   id: string;
-  name: string;
+  identifier: string;
   key: string;
   createdAt: string;
   lastUsed: string | null;
+  status: "active" | "revoked";
 }
 
 export default function ApiKeys() {
@@ -17,10 +19,11 @@ export default function ApiKeys() {
   const [keys, setKeys] = useState<ApiKey[]>([
     {
       id: "1",
-      name: "Default Key",
-      key: "ipa_live_xxxxxxxxxxxxxxxxxxxx",
-      createdAt: "2026-01-20",
-      lastUsed: null
+      identifier: "IPO-ANALYSIS-APP",
+      key: "410f9xxxxxxxxxxxx",
+      createdAt: "January 22nd, 2026",
+      lastUsed: null,
+      status: "active"
     }
   ]);
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
@@ -41,85 +44,79 @@ export default function ApiKeys() {
   };
 
   const maskKey = (key: string) => {
-    return key.slice(0, 12) + "..." + key.slice(-4);
+    return key.slice(0, 5) + "••••••••••••";
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">API Keys</h1>
-          <p className="text-muted-foreground">Manage your API keys for accessing IPO data</p>
-        </div>
-        <Button disabled className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create New Key
-        </Button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">API Keys</h1>
+        <p className="text-muted-foreground">Manage your API keys</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Key className="w-4 h-4" />
-            Your API Keys
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {keys.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Key className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No API keys yet</p>
-              <p className="text-sm">Create your first API key to start using the IPO API</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {keys.map((apiKey) => (
-                <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="space-y-1">
-                    <p className="font-medium">{apiKey.name}</p>
-                    <div className="flex items-center gap-2">
-                      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
-                        {visibleKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
-                      </code>
-                      <button
-                        onClick={() => toggleKeyVisibility(apiKey.id)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        {visibleKeys.has(apiKey.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                      <button
-                        onClick={() => copyKey(apiKey.key)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Created: {apiKey.createdAt} | Last used: {apiKey.lastUsed || "Never"}
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Card className="bg-[#f8faf9]">
+        <CardContent className="pt-6">
+          <div className="mb-6">
+            <Button className="gap-2 bg-foreground text-background hover:bg-foreground/90">
+              <Plus className="w-4 h-4" />
+              Create API Key
+            </Button>
+          </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium">Usage Instructions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Include your API key in the request header to authenticate your requests:
-          </p>
-          <pre className="bg-muted p-4 rounded-lg text-sm font-mono overflow-x-auto">
-{`curl -X GET "https://api.ipoanalyzer.in/ipos?status=open" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`}
-          </pre>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-sm text-muted-foreground border-b">
+                  <th className="pb-3 font-medium">Identifier</th>
+                  <th className="pb-3 font-medium">API Key</th>
+                  <th className="pb-3 font-medium">Created At</th>
+                  <th className="pb-3 font-medium">Last Used</th>
+                  <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {keys.map((apiKey) => (
+                  <tr key={apiKey.id} className="border-b last:border-b-0">
+                    <td className="py-4 font-medium text-sm">{apiKey.identifier}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-2">
+                        <code className="text-sm font-mono">
+                          {visibleKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
+                        </code>
+                        <button
+                          onClick={() => toggleKeyVisibility(apiKey.id)}
+                          className="text-muted-foreground hover:text-foreground"
+                          data-testid="button-toggle-key-visibility"
+                        >
+                          {visibleKeys.has(apiKey.id) ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                        <button
+                          onClick={() => copyKey(apiKey.key)}
+                          className="text-muted-foreground hover:text-foreground"
+                          data-testid="button-copy-key"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="py-4 text-sm text-muted-foreground">{apiKey.createdAt}</td>
+                    <td className="py-4 text-sm text-muted-foreground">{apiKey.lastUsed || "Never"}</td>
+                    <td className="py-4">
+                      <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                        Active
+                      </Badge>
+                    </td>
+                    <td className="py-4">
+                      <button className="text-red-500 hover:text-red-600" data-testid="button-delete-key">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
