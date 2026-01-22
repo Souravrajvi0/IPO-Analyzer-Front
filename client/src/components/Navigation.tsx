@@ -8,7 +8,8 @@ import {
   Menu,
   X,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Shield
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ export function Navigation() {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/watchlist", label: "My Watchlist", icon: LineChart },
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/admin", label: "Admin", icon: Shield },
   ];
 
   return (

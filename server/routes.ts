@@ -79,8 +79,15 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Admin/Sync Routes
-  app.get("/api/admin/sync/test", async (req, res) => {
+  // Admin/Sync Routes - Protected by authentication
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized - Please sign in" });
+    }
+    next();
+  };
+
+  app.get("/api/admin/sync/test", requireAuth, async (req, res) => {
     try {
       const result = await testScraper();
       res.json(result);
@@ -92,7 +99,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/admin/sync", async (req, res) => {
+  app.post("/api/admin/sync", requireAuth, async (req, res) => {
     try {
       console.log("🔄 Starting IPO data sync from Chittorgarh...");
       
@@ -130,7 +137,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/admin/stats", async (req, res) => {
+  app.get("/api/admin/stats", requireAuth, async (req, res) => {
     const count = await storage.getIpoCount();
     const ipos = await storage.getIpos();
     
