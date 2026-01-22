@@ -1,165 +1,248 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, ShieldCheck, Zap, BarChart3, Sparkles } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Zap, BarChart3, ChevronUp, ChevronDown, Bell, Check } from "lucide-react";
 import { useIpos } from "@/hooks/use-ipos";
 import { IpoCard } from "@/components/IpoCard";
-import { Navigation } from "@/components/Navigation";
-import { motion } from "framer-motion";
+import { Footer } from "@/components/Footer";
+import { useState } from "react";
 
-export default function Landing() {
-  const { data: ipos } = useIpos({ status: 'upcoming' });
-  const previewIpos = ipos?.slice(0, 3);
-
+function TickerItem({ name, gmp }: { name: string; gmp: number }) {
+  const isPositive = gmp >= 0;
   return (
-    <div className="min-h-screen bg-[#030303] text-white overflow-hidden noise-bg">
-      <Navigation />
-      
-      <section className="relative pt-32 pb-20 lg:pt-44 lg:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-purple-500/10 via-purple-500/5 to-transparent -z-10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-40 right-0 w-[400px] h-[400px] bg-cyan-500/5 -z-10 blur-[100px] rounded-full pointer-events-none" />
-        
-        <div className="text-center max-w-4xl mx-auto mb-20">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.06] text-white/60 text-sm font-medium mb-8 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-              </span>
-              <span>Live IPO Tracking for NSE & BSE</span>
-            </div>
-            
-            <h1 className="text-5xl lg:text-7xl font-display font-bold tracking-tight mb-6 leading-[1.1]">
-              <span className="gradient-text">Invest in Tomorrow,</span>
-              <br />
-              <span className="gradient-text-primary">Before It Launches.</span>
-            </h1>
-            
-            <p className="text-lg lg:text-xl text-white/40 mb-10 leading-relaxed max-w-2xl mx-auto">
-              Premium IPO analytics for the Indian market. Track mainboard & SME offerings with institutional-grade data at your fingertips.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/api/login">
-                <Button 
-                  size="lg" 
-                  className="h-14 px-8 text-base font-semibold rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 hover:to-violet-500 text-white border-0 shadow-2xl shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 group"
-                  data-testid="button-hero-start"
-                >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Start Analyzing Free
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </a>
-              <Button 
-                size="lg" 
-                variant="ghost"
-                className="h-14 px-8 text-base font-semibold rounded-xl bg-white/[0.02] hover:bg-white/[0.05] text-white/70 hover:text-white border border-white/[0.08] hover:border-white/[0.15] transition-all"
-                data-testid="button-hero-demo"
-              >
-                <BarChart3 className="w-5 h-5 mr-2" />
-                View Live Demo
-              </Button>
-            </div>
-          </motion.div>
-        </div>
+    <div className="flex items-center gap-2 px-4 py-1 whitespace-nowrap">
+      <span className="font-semibold text-foreground">{name}</span>
+      <span className={`flex items-center gap-0.5 font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+        {isPositive ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        {isPositive ? '+' : ''}{gmp}%
+      </span>
+    </div>
+  );
+}
 
-        <div className="grid md:grid-cols-3 gap-5 mt-24 mb-28">
-          {[
-            { 
-              icon: TrendingUp, 
-              title: "Market Analysis", 
-              desc: "Deep dive into financials, sector comparisons, and growth potential for every IPO.",
-              gradient: "from-purple-500/20 to-purple-500/5"
-            },
-            { 
-              icon: Zap, 
-              title: "Real-time Alerts", 
-              desc: "Never miss an opening with instant notifications on status changes and price updates.",
-              gradient: "from-cyan-500/20 to-cyan-500/5"
-            },
-            { 
-              icon: ShieldCheck, 
-              title: "Due Diligence", 
-              desc: "Aggregated risk factors, DRHP summaries, and peer comparisons for safer investing.",
-              gradient: "from-emerald-500/20 to-emerald-500/5"
-            }
-          ].map((feature, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              viewport={{ once: true }}
-              className={`relative group premium-card p-7 hover-lift`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`} />
-              <div className="relative z-10">
-                <div className="h-12 w-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-purple-400 mb-5 group-hover:border-purple-500/30 transition-colors">
-                  <feature.icon className="w-5 h-5" />
+function ScrollingTicker() {
+  const { data: ipos } = useIpos({});
+  const tickerItems = ipos?.filter(ipo => ipo.gmp !== null).slice(0, 10) || [];
+  
+  if (tickerItems.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div className="bg-foreground text-background overflow-hidden py-2">
+      <div className="flex ticker-scroll">
+        {[...tickerItems, ...tickerItems].map((ipo, i) => (
+          <TickerItem 
+            key={`${ipo.id}-${i}`} 
+            name={ipo.symbol || ipo.companyName.slice(0, 10)} 
+            gmp={typeof ipo.gmp === 'number' ? Math.round((ipo.gmp / (ipo.minPrice || 100)) * 100) : 0} 
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NavHeader() {
+  return (
+    <header className="bg-background border-b border-border sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-8">
+            <Link href="/">
+              <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home-logo">
+                <div className="bg-primary p-1.5 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-lg font-display font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed">{feature.desc}</p>
+                <span className="font-bold text-lg text-foreground">IPO Analyzer</span>
               </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="relative">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <p className="text-xs text-purple-400 uppercase tracking-[0.25em] font-semibold mb-2">Live Market</p>
-              <h2 className="text-2xl lg:text-3xl font-display font-bold text-white">Upcoming IPOs</h2>
-              <p className="text-white/40 mt-2 text-sm">Companies preparing to go public on Indian exchanges.</p>
-            </div>
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/dashboard">
+                <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer text-sm font-medium" data-testid="link-nav-dashboard">Dashboard</span>
+              </Link>
+              <Link href="/watchlist">
+                <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer text-sm font-medium" data-testid="link-nav-watchlist">Watchlist</span>
+              </Link>
+            </nav>
+          </div>
+          <div className="flex items-center gap-3">
             <a href="/api/login">
-              <Button 
-                variant="ghost" 
-                className="hidden sm:flex text-white/50 hover:text-white hover:bg-white/[0.03] group"
-                data-testid="button-viewall"
-              >
-                View All 
-                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <Button variant="ghost" className="text-foreground font-medium" data-testid="button-login">
+                Login
+              </Button>
+            </a>
+            <a href="/api/login">
+              <Button className="bg-primary text-white hover:bg-primary/90 font-semibold rounded-lg" data-testid="button-signup">
+                Sign Up
               </Button>
             </a>
           </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function StatusTabs({ activeStatus, onStatusChange }: { activeStatus: string; onStatusChange: (s: string) => void }) {
+  const statuses = [
+    { value: 'open', label: 'Open' },
+    { value: 'upcoming', label: 'Upcoming' },
+    { value: 'announced', label: 'Announced' },
+    { value: 'closed', label: 'Closed' },
+  ];
+  
+  return (
+    <div className="flex items-center gap-2">
+      {statuses.map(s => (
+        <button
+          key={s.value}
+          onClick={() => onStatusChange(s.value)}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            activeStatus === s.value 
+              ? 'bg-foreground text-background' 
+              : 'bg-transparent text-muted-foreground border border-border hover:bg-muted'
+          }`}
+          data-testid={`tab-status-${s.value}`}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function Landing() {
+  const [activeStatus, setActiveStatus] = useState('open');
+  const { data: ipos, isLoading } = useIpos({ status: activeStatus });
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <ScrollingTicker />
+      <NavHeader />
+      
+      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-muted-foreground text-sm font-medium mb-8 cursor-pointer hover:bg-muted/80 transition-colors">
+          <span>How did a weekend experiment turn into a powerful screener?</span>
+          <span className="text-primary font-semibold flex items-center gap-1">
+            Read the story <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+        
+        <h1 className="text-4xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
+          The <span className="text-primary">smart screener</span> for
+          <br />
+          IPOs in India
+        </h1>
+        
+        <p className="text-lg text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">
+          Get comprehensive analysis with risk scoring and red flag detection.
+          Our AI-powered tools help you make informed decisions in less than 2 minutes.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <a href="/api/login">
+            <Button 
+              size="lg" 
+              className="h-12 px-8 text-base font-semibold rounded-lg bg-foreground text-background hover:bg-foreground/90"
+              data-testid="button-hero-start"
+            >
+              Get started for free
+            </Button>
+          </a>
+          <Link href="/dashboard">
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="h-12 px-8 text-base font-semibold rounded-lg border-border"
+              data-testid="button-hero-demo"
+            >
+              View Dashboard
+            </Button>
+          </Link>
+        </div>
+
+        <div className="flex justify-center mb-12">
+          <StatusTabs activeStatus={activeStatus} onStatusChange={setActiveStatus} />
+        </div>
+
+        <div className="bg-muted rounded-2xl p-4 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-400"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            </div>
+            <div className="flex-1 bg-background rounded-lg px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+              <Shield className="w-4 h-4 text-green-600" />
+              <span className="text-foreground">ipoanalyzer.replit.app/ipos?status={activeStatus}</span>
+            </div>
+          </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {previewIpos ? (
-              previewIpos.map((ipo, i) => (
-                <motion.div
-                  key={ipo.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <IpoCard ipo={ipo} />
-                </motion.div>
-              ))
-            ) : (
-              [1, 2, 3].map(i => (
-                <div key={i} className="h-72 rounded-2xl bg-white/[0.02] border border-white/[0.05] shimmer" />
-              ))
-            )}
+          {isLoading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-48 rounded-lg bg-background animate-pulse" />
+              ))}
+            </div>
+          ) : ipos && ipos.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {ipos.slice(0, 6).map((ipo) => (
+                <IpoCard key={ipo.id} ipo={ipo} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-muted-foreground">
+              No {activeStatus} IPOs at the moment
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="py-16 bg-muted">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-center mb-12">Why use IPO Analyzer?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: BarChart3, 
+                title: "Smart Scoring", 
+                desc: "Fundamentals, valuation, and governance scores computed from DRHP data."
+              },
+              { 
+                icon: Shield, 
+                title: "Risk Detection", 
+                desc: "Automated red flag identification for high OFS, expensive valuations, and more."
+              },
+              { 
+                icon: Zap, 
+                title: "Real-time Alerts", 
+                desc: "Get notified via email or Telegram when new IPOs are announced or GMP changes."
+              }
+            ].map((feature, i) => (
+              <div key={i} className="text-center">
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-lg bg-primary/10 text-primary mb-4">
+                  <feature.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-white/[0.05] py-10 bg-[#020202]">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-2 rounded-lg">
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-display font-bold text-white/80">IPO Analyzer</span>
-          </div>
-          <p className="text-white/30 text-sm">Financial data for educational purposes. Not investment advice.</p>
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-muted-foreground mb-4">P.S. You can also ask for help or request for features.</p>
+          <a href="/api/login">
+            <Button className="bg-primary text-white hover:bg-primary/90 font-semibold rounded-lg px-8" data-testid="button-cta-signup">
+              Start Analyzing IPOs
+            </Button>
+          </a>
         </div>
-      </footer>
+      </section>
+
+      <Footer />
     </div>
   );
 }

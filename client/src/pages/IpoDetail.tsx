@@ -7,10 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
   Calendar, 
-  IndianRupee, 
   PieChart, 
   FileText, 
-  Briefcase,
   Check,
   Plus,
   Layers,
@@ -23,7 +21,6 @@ import {
   Target,
   CheckCircle2,
   XCircle,
-  Percent,
   Building2,
   Sparkles,
   Loader2
@@ -38,26 +35,24 @@ function ScoreBar({ label, score, icon: Icon }: { label: string; score: number |
   const percentage = (score / 10) * 100;
   
   const getColor = (s: number) => {
-    if (s >= 7.5) return { bg: "bg-emerald-500", glow: "shadow-emerald-500/30" };
-    if (s >= 6) return { bg: "bg-blue-500", glow: "shadow-blue-500/30" };
-    if (s >= 4) return { bg: "bg-amber-500", glow: "shadow-amber-500/30" };
-    return { bg: "bg-red-500", glow: "shadow-red-500/30" };
+    if (s >= 7.5) return "bg-green-500";
+    if (s >= 6) return "bg-blue-500";
+    if (s >= 4) return "bg-orange-500";
+    return "bg-red-500";
   };
-  
-  const colors = getColor(score);
   
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-purple-400" />
-          <span className="text-sm text-white/60">{label}</span>
+          <Icon className="w-4 h-4 text-primary" />
+          <span className="text-sm text-muted-foreground">{label}</span>
         </div>
-        <span className="font-mono font-bold text-white">{score.toFixed(1)}/10</span>
+        <span className="font-semibold text-foreground">{score.toFixed(1)}/10</span>
       </div>
-      <div className="h-2 bg-white/[0.05] rounded-full overflow-hidden">
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
         <div 
-          className={`h-full rounded-full ${colors.bg} shadow-lg ${colors.glow} transition-all duration-700 ease-out`}
+          className={`h-full rounded-full ${getColor(score)} transition-all duration-700 ease-out`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -74,10 +69,10 @@ function OverallScoreRing({ score }: { score: number | null }) {
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
   
   const getScoreColor = (s: number) => {
-    if (s >= 7.5) return { stroke: "#10b981", text: "text-emerald-400", label: "Strong" };
-    if (s >= 6) return { stroke: "#3b82f6", text: "text-blue-400", label: "Good" };
-    if (s >= 4) return { stroke: "#f59e0b", text: "text-amber-400", label: "Fair" };
-    return { stroke: "#ef4444", text: "text-red-400", label: "Weak" };
+    if (s >= 7.5) return { stroke: "#22c55e", text: "text-green-600", label: "Strong" };
+    if (s >= 6) return { stroke: "#3b82f6", text: "text-blue-600", label: "Good" };
+    if (s >= 4) return { stroke: "#f97316", text: "text-orange-600", label: "Fair" };
+    return { stroke: "#ef4444", text: "text-red-600", label: "Weak" };
   };
   
   const colors = getScoreColor(score);
@@ -90,7 +85,7 @@ function OverallScoreRing({ score }: { score: number | null }) {
           cy="70"
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.05)"
+          stroke="hsl(var(--muted))"
           strokeWidth="8"
         />
         <circle
@@ -103,13 +98,12 @@ function OverallScoreRing({ score }: { score: number | null }) {
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          className="transition-all duration-1000 ease-out drop-shadow-lg"
-          style={{ filter: `drop-shadow(0 0 12px ${colors.stroke}50)` }}
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-mono font-bold text-4xl ${colors.text}`}>{score.toFixed(1)}</span>
-        <span className="text-xs text-white/40 uppercase tracking-wider mt-1">{colors.label}</span>
+        <span className={`font-bold text-4xl ${colors.text}`}>{score.toFixed(1)}</span>
+        <span className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{colors.label}</span>
       </div>
     </div>
   );
@@ -120,23 +114,23 @@ function RiskBadge({ riskLevel }: { riskLevel: string | null }) {
   
   const config = {
     conservative: { 
-      bg: "bg-emerald-500/10", 
-      border: "border-emerald-500/30", 
-      text: "text-emerald-400",
+      bg: "bg-green-50", 
+      border: "border-green-200", 
+      text: "text-green-700",
       icon: Shield,
       label: "Conservative Risk"
     },
     moderate: { 
-      bg: "bg-amber-500/10", 
-      border: "border-amber-500/30", 
-      text: "text-amber-400",
+      bg: "bg-orange-50", 
+      border: "border-orange-200", 
+      text: "text-orange-700",
       icon: Target,
       label: "Moderate Risk"
     },
     aggressive: { 
-      bg: "bg-red-500/10", 
-      border: "border-red-500/30", 
-      text: "text-red-400",
+      bg: "bg-red-50", 
+      border: "border-red-200", 
+      text: "text-red-700",
       icon: AlertTriangle,
       label: "Aggressive Risk"
     },
@@ -146,11 +140,11 @@ function RiskBadge({ riskLevel }: { riskLevel: string | null }) {
   const Icon = style.icon;
   
   return (
-    <div className={`${style.bg} ${style.border} border rounded-xl p-4 flex items-center gap-3`}>
+    <div className={`${style.bg} ${style.border} border rounded-lg p-4 flex items-center gap-3`}>
       <Icon className={`w-5 h-5 ${style.text}`} />
       <div>
         <div className={`font-semibold ${style.text}`}>{style.label}</div>
-        <div className="text-xs text-white/40">Based on fundamentals & valuation</div>
+        <div className="text-xs text-muted-foreground">Based on fundamentals & valuation</div>
       </div>
     </div>
   );
@@ -168,16 +162,32 @@ function MetricRow({ label, value, suffix = "", highlight = false }: {
   const isNegative = typeof value === 'number' && value < 0;
   
   return (
-    <div className="flex items-center justify-between py-2 border-b border-white/[0.05] last:border-0">
-      <span className="text-sm text-white/50">{label}</span>
-      <span className={`font-mono font-medium ${
+    <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className={`font-semibold ${
         highlight 
-          ? isNegative ? "text-red-400" : "text-emerald-400"
-          : "text-white"
+          ? isNegative ? "text-red-600" : "text-green-600"
+          : "text-foreground"
       }`}>
         {displayValue}{suffix}
       </span>
     </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const getStatusStyles = (s: string) => {
+    switch(s.toLowerCase()) {
+      case 'open': return "bg-green-50 text-green-700 border-green-200";
+      case 'upcoming': return "bg-blue-50 text-blue-700 border-blue-200";
+      default: return "bg-gray-50 text-gray-600 border-gray-200";
+    }
+  };
+
+  return (
+    <Badge variant="outline" className={`text-xs font-medium capitalize px-2.5 py-0.5 rounded-full border ${getStatusStyles(status)}`}>
+      {status}
+    </Badge>
   );
 }
 
@@ -214,38 +224,27 @@ export default function IpoDetail() {
     },
   });
 
-  const getStatusStyles = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'open': return "badge-glow-green";
-      case 'upcoming': return "badge-glow-blue";
-      default: return "bg-white/[0.05] text-white/50 border-white/[0.08]";
-    }
-  };
-
   if (isLoading) return (
-    <div className="h-screen flex items-center justify-center">
-      <div className="relative">
-        <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full" />
-        <TrendingUp className="w-8 h-8 animate-pulse text-purple-400 relative z-10" />
-      </div>
+    <div className="h-[60vh] flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
     </div>
   );
   
   if (!ipo) return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-[60vh] flex items-center justify-center">
       <div className="text-center">
-        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-        <p className="text-white/60 text-lg">IPO not found</p>
+        <AlertTriangle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+        <p className="text-muted-foreground text-lg">IPO not found</p>
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-12">
+    <div className="max-w-5xl mx-auto pb-12">
       <Link href="/dashboard">
         <Button 
           variant="ghost" 
-          className="mb-6 pl-0 text-white/40 hover:text-white hover:bg-transparent"
+          className="mb-6 pl-0 text-muted-foreground hover:text-foreground"
           data-testid="button-back"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -253,31 +252,25 @@ export default function IpoDetail() {
         </Button>
       </Link>
 
-      {/* Header Card */}
-      <div className="premium-card mb-6">
-        <div className="p-8 border-b border-white/[0.05] bg-gradient-to-r from-white/[0.02] to-transparent">
+      <div className="bg-card rounded-lg border border-border mb-6">
+        <div className="p-6 border-b border-border">
           <div className="flex flex-col md:flex-row justify-between gap-6">
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-4xl font-display font-bold text-white">{ipo.symbol}</h1>
-                <Badge 
-                  variant="outline"
-                  className={`text-xs font-bold uppercase tracking-[0.1em] px-3 py-1 rounded-full border capitalize ${getStatusStyles(ipo.status)}`}
-                >
-                  {ipo.status}
-                </Badge>
+                <h1 className="text-3xl font-bold text-foreground">{ipo.symbol}</h1>
+                <StatusBadge status={ipo.status} />
               </div>
-              <h2 className="text-xl text-white/50 font-medium mb-4">{ipo.companyName}</h2>
-              <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-lg text-muted-foreground font-medium mb-4">{ipo.companyName}</h2>
+              <div className="flex flex-wrap items-center gap-2">
                 {ipo.sector && (
-                  <Badge variant="outline" className="bg-white/[0.02] border-white/[0.08] text-white/60">
-                    <Layers className="w-3 h-3 mr-1.5 text-cyan-400" />
+                  <Badge variant="outline" className="bg-muted border-border text-muted-foreground">
+                    <Layers className="w-3 h-3 mr-1.5" />
                     {ipo.sector}
                   </Badge>
                 )}
                 {ipo.issueSize && (
-                  <Badge variant="outline" className="bg-white/[0.02] border-white/[0.08] text-white/60">
-                    <Building2 className="w-3 h-3 mr-1.5 text-purple-400" />
+                  <Badge variant="outline" className="bg-muted border-border text-muted-foreground">
+                    <Building2 className="w-3 h-3 mr-1.5" />
                     {ipo.issueSize}
                   </Badge>
                 )}
@@ -286,10 +279,10 @@ export default function IpoDetail() {
             <div className="flex items-start gap-3">
               <Button 
                 size="lg" 
-                className={`rounded-xl transition-all duration-300 ${
+                className={`rounded-lg transition-all ${
                   isWatching 
-                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
-                    : 'bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 hover:to-violet-500 text-white border-0 shadow-lg shadow-purple-500/20'
+                    ? 'bg-primary/10 text-primary border border-primary/30' 
+                    : 'bg-primary text-white hover:bg-primary/90'
                 }`}
                 onClick={handleWatch}
                 disabled={isWatching || isPending}
@@ -305,41 +298,38 @@ export default function IpoDetail() {
           </div>
         </div>
 
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.05]">
-          <div className="bg-[#0a0a0a] p-5">
-            <div className="text-xs text-white/40 mb-1">Price Range</div>
-            <div className="font-mono font-bold text-lg text-white">{ipo.priceRange}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+          <div className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Price Range</div>
+            <div className="font-semibold text-foreground">{ipo.priceRange}</div>
           </div>
-          <div className="bg-[#0a0a0a] p-5">
-            <div className="text-xs text-white/40 mb-1">Expected Date</div>
-            <div className="font-medium text-lg text-white">
+          <div className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Expected Date</div>
+            <div className="font-medium text-foreground">
               {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd MMM yyyy") : "TBA"}
             </div>
           </div>
-          <div className="bg-[#0a0a0a] p-5">
-            <div className="text-xs text-white/40 mb-1">Lot Size</div>
-            <div className="font-mono font-bold text-lg text-white">{ipo.lotSize || "TBA"} shares</div>
+          <div className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Lot Size</div>
+            <div className="font-semibold text-foreground">{ipo.lotSize || "TBA"} shares</div>
           </div>
-          <div className="bg-[#0a0a0a] p-5">
-            <div className="text-xs text-white/40 mb-1">Min Investment</div>
-            <div className="font-mono font-bold text-lg text-white">{ipo.minInvestment || "TBA"}</div>
+          <div className="p-4">
+            <div className="text-xs text-muted-foreground mb-1">Min Investment</div>
+            <div className="font-semibold text-foreground">{ipo.minInvestment || "TBA"}</div>
           </div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Left Column - Analysis */}
         <div className="md:col-span-2 space-y-6">
           
-          {/* Score Breakdown */}
-          <div className="premium-card p-6">
+          <div className="bg-card rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-display font-bold text-white flex items-center gap-2">
-                <Gauge className="w-5 h-5 text-purple-400" />
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Gauge className="w-5 h-5 text-primary" />
                 IPO Score Analysis
               </h3>
-              <div className="text-xs text-white/40 bg-white/[0.03] px-3 py-1.5 rounded-full border border-white/[0.05]">
+              <div className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
                 Screener Tool Only - Not Investment Advice
               </div>
             </div>
@@ -360,19 +350,17 @@ export default function IpoDetail() {
             </div>
           </div>
 
-          {/* Red Flags & Positives */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Red Flags */}
             {ipo.redFlags && ipo.redFlags.length > 0 && (
-              <div className="premium-card p-6 border-red-500/20">
-                <h3 className="text-base font-display font-bold text-red-400 mb-4 flex items-center gap-2">
+              <div className="bg-card rounded-lg border border-red-200 p-6">
+                <h3 className="text-base font-bold text-red-700 mb-4 flex items-center gap-2">
                   <XCircle className="w-5 h-5" />
                   Risk Flags ({ipo.redFlags.length})
                 </h3>
                 <ul className="space-y-3">
                   {ipo.redFlags.map((flag, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm text-white/60">
-                      <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                    <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
+                      <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                       {flag}
                     </li>
                   ))}
@@ -380,17 +368,16 @@ export default function IpoDetail() {
               </div>
             )}
 
-            {/* Positives */}
             {ipo.pros && ipo.pros.length > 0 && (
-              <div className="premium-card p-6 border-emerald-500/20">
-                <h3 className="text-base font-display font-bold text-emerald-400 mb-4 flex items-center gap-2">
+              <div className="bg-card rounded-lg border border-green-200 p-6">
+                <h3 className="text-base font-bold text-green-700 mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5" />
                   Positives ({ipo.pros.length})
                 </h3>
                 <ul className="space-y-3">
                   {ipo.pros.map((pro, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm text-white/60">
-                      <Check className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
+                      <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                       {pro}
                     </li>
                   ))}
@@ -399,31 +386,28 @@ export default function IpoDetail() {
             )}
           </div>
 
-          {/* Company Overview */}
-          <div className="premium-card p-6">
-            <h3 className="text-lg font-display font-bold text-white mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-purple-400" />
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
               Company Overview
             </h3>
-            <p className="text-white/50 leading-relaxed text-base">
+            <p className="text-muted-foreground leading-relaxed">
               {ipo.description || "Detailed prospectus information will be available closer to the offering date."}
             </p>
           </div>
 
-          {/* AI Analysis Section */}
-          <div className="premium-card p-6">
+          <div className="bg-card rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-display font-bold text-white flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-400" />
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
                 AI Analysis
               </h3>
               {!ipo.aiSummary && (
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => analyzeIpo.mutate(ipo.id)}
                   disabled={analyzeIpo.isPending}
-                  className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                  className="bg-primary text-white hover:bg-primary/90"
                   data-testid="button-generate-ai-analysis"
                 >
                   {analyzeIpo.isPending ? (
@@ -438,25 +422,25 @@ export default function IpoDetail() {
             {ipo.aiSummary ? (
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-semibold text-white/60 mb-2">Summary</h4>
-                  <p className="text-white/70 leading-relaxed">{ipo.aiSummary}</p>
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-2">Summary</h4>
+                  <p className="text-foreground leading-relaxed">{ipo.aiSummary}</p>
                 </div>
                 {ipo.aiRecommendation && (
                   <div>
-                    <h4 className="text-sm font-semibold text-white/60 mb-2">Recommendation</h4>
-                    <p className="text-white/70 leading-relaxed">{ipo.aiRecommendation}</p>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-2">Recommendation</h4>
+                    <p className="text-foreground leading-relaxed">{ipo.aiRecommendation}</p>
                   </div>
                 )}
-                <div className="pt-3 border-t border-white/[0.05]">
-                  <p className="text-xs text-white/30 italic">
+                <div className="pt-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground italic">
                     AI-generated analysis for screening purposes only. Not investment advice.
                   </p>
                 </div>
               </div>
             ) : (
               <div className="text-center py-6">
-                <Sparkles className="w-10 h-10 text-white/20 mx-auto mb-3" />
-                <p className="text-white/40 text-sm">
+                <Sparkles className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">
                   Click "Generate Analysis" to get AI-powered insights about this IPO
                 </p>
               </div>
@@ -464,12 +448,10 @@ export default function IpoDetail() {
           </div>
         </div>
 
-        {/* Right Column - Metrics */}
         <div className="space-y-6">
-          {/* Financial Metrics */}
-          <div className="premium-card p-6">
-            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-purple-400" />
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h4 className="font-bold text-foreground text-sm mb-4 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
               Financial Metrics
             </h4>
             <div className="space-y-1">
@@ -482,10 +464,9 @@ export default function IpoDetail() {
             </div>
           </div>
 
-          {/* Valuation */}
-          <div className="premium-card p-6">
-            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-purple-400" />
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h4 className="font-bold text-foreground text-sm mb-4 flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" />
               Valuation
             </h4>
             <div className="space-y-1">
@@ -495,10 +476,9 @@ export default function IpoDetail() {
             </div>
           </div>
 
-          {/* Offer Structure */}
-          <div className="premium-card p-6">
-            <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-purple-400" />
+          <div className="bg-card rounded-lg border border-border p-6">
+            <h4 className="font-bold text-foreground text-sm mb-4 flex items-center gap-2">
+              <PieChart className="w-4 h-4 text-primary" />
               Offer Structure
             </h4>
             <div className="space-y-1">
@@ -509,11 +489,10 @@ export default function IpoDetail() {
             </div>
           </div>
 
-          {/* Subscription Data */}
           {(ipo.subscriptionQib || ipo.subscriptionHni || ipo.subscriptionRetail) && (
-            <div className="premium-card p-6">
-              <h4 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
-                <Users className="w-4 h-4 text-purple-400" />
+            <div className="bg-card rounded-lg border border-border p-6">
+              <h4 className="font-bold text-foreground text-sm mb-4 flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
                 Subscription Data
               </h4>
               <div className="space-y-1">
@@ -524,31 +503,29 @@ export default function IpoDetail() {
             </div>
           )}
 
-          {/* GMP */}
           {ipo.gmp !== null && ipo.gmp !== undefined && (
-            <div className={`premium-card p-6 ${ipo.gmp > 0 ? 'border-emerald-500/20' : ipo.gmp < 0 ? 'border-red-500/20' : ''}`}>
-              <h4 className="font-bold text-white text-sm mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-purple-400" />
+            <div className={`bg-card rounded-lg border p-6 ${ipo.gmp > 0 ? 'border-green-200' : ipo.gmp < 0 ? 'border-red-200' : 'border-border'}`}>
+              <h4 className="font-bold text-foreground text-sm mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
                 Grey Market Premium
               </h4>
-              <div className={`text-3xl font-mono font-bold ${
-                ipo.gmp > 0 ? 'text-emerald-400' : ipo.gmp < 0 ? 'text-red-400' : 'text-white/50'
+              <div className={`text-3xl font-bold ${
+                ipo.gmp > 0 ? 'text-green-600' : ipo.gmp < 0 ? 'text-red-600' : 'text-muted-foreground'
               }`}>
-                {ipo.gmp > 0 ? '+' : ''}₹{ipo.gmp}
+                {ipo.gmp > 0 ? '+' : ''}Rs.{ipo.gmp}
               </div>
-              <p className="text-xs text-white/40 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Unofficial market sentiment indicator
               </p>
             </div>
           )}
 
-          {/* Disclaimer */}
-          <div className="bg-amber-500/5 rounded-xl border border-amber-500/20 p-5">
-            <h4 className="font-bold text-amber-400 mb-2 flex items-center gap-2 text-sm">
+          <div className="bg-orange-50 rounded-lg border border-orange-200 p-5">
+            <h4 className="font-bold text-orange-700 mb-2 flex items-center gap-2 text-sm">
               <AlertTriangle className="h-4 w-4" />
               Screener Disclaimer
             </h4>
-            <p className="text-xs text-white/50 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               This is a screening tool only. Scores are computed from available data and should not be considered investment advice. Always review the full DRHP/RHP and consult a SEBI-registered advisor before investing.
             </p>
           </div>

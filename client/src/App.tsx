@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Loader2 } from "lucide-react";
 
 import Landing from "@/pages/Landing";
@@ -21,23 +22,24 @@ function PrivateRoute({ component: Component }: { component: React.ComponentType
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!user) {
-    // Redirect handled by useAuth or the page logic, 
-    // but here we just render Landing if not authed for better UX
     return <Landing />;
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-background text-foreground">
       <Navigation />
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8 pt-20 lg:pt-8 max-w-[1600px] mx-auto w-full">
-        <Component />
+      <main className="pt-14 lg:pt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Component />
+        </div>
       </main>
+      <Footer />
     </div>
   );
 }
@@ -48,7 +50,7 @@ function Router() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
