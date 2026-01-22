@@ -43,12 +43,18 @@ Preferred communication style: Simple, everyday language.
 - **Status Badges**: Color-coded (green for Open, blue for Upcoming, gray for Closed)
 
 ### Key Pages
-- **Landing** (`/`): Scrolling ticker, hero section with status tabs (Open/Upcoming/Announced/Closed)
+- **Landing** (`/`): Dark scrolling ticker with GMP%, hero section, API JSON preview, status tabs, FAQ accordion
 - **Dashboard** (`/dashboard`): Stats cards, search, filters, IPO card grid
 - **IPO Detail** (`/ipos/:id`): Score ring visualization, metrics cards, AI analysis section
 - **Watchlist** (`/watchlist`): Tracked IPOs table with remove functionality
 - **Settings** (`/settings`): Profile info, alert preferences (email/Telegram)
 - **Admin** (`/admin`): Data sync controls, database stats
+
+### Landing Page Features (January 2026)
+- **Dark Ticker Bar**: Scrolling bar showing IPO names with GMP percentages (e.g., "SAMPLE1 +25%")
+- **API Preview Section**: Terminal-style code block displaying live JSON response with status tabs
+- **FAQ Accordion**: Frequently Asked Questions with expandable accordion items
+- **Hero Section**: "The near real-time API for IPOs in India" headline with CTAs
 
 ## System Architecture
 
