@@ -7,7 +7,8 @@ import {
   LogOut, 
   Menu,
   X,
-  TrendingUp
+  TrendingUp,
+  Sparkles
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,28 +22,41 @@ export function Navigation() {
   const isActive = (path: string) => location === path;
 
   if (!user) return (
-    <nav className="fixed w-full z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
+    <nav className="fixed w-full z-50 glass-panel border-b border-white/[0.05]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/50 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-gradient-to-br from-purple-500 to-violet-600 p-2 rounded-xl">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
               </div>
-              <span className="font-display font-bold text-xl tracking-tight">IPO Analyzer</span>
+              <span className="font-display font-bold text-xl tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+                IPO Analyzer
+              </span>
             </div>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/api/login">
-              <Button variant="outline" className="font-medium hover:bg-primary/5 hover:text-primary transition-colors">
+          <div className="flex items-center gap-3">
+            <a href="/api/login">
+              <Button 
+                variant="ghost" 
+                className="font-medium text-white/70 hover:text-white hover:bg-white/5 transition-all"
+                data-testid="button-signin"
+              >
                 Sign In
               </Button>
-            </Link>
-            <Link href="/api/login">
-              <Button className="font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
+            </a>
+            <a href="/api/login">
+              <Button 
+                className="font-semibold bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 hover:to-violet-500 text-white border-0 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all duration-300"
+                data-testid="button-getstarted"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
                 Get Started
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -57,55 +71,71 @@ export function Navigation() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 fixed inset-y-0 left-0 border-r border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="p-6">
+      <aside className="hidden lg:flex flex-col w-64 fixed inset-y-0 left-0 border-r border-white/[0.05] bg-[#030303]">
+        <div className="p-6 border-b border-white/[0.05]">
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/50 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative bg-gradient-to-br from-purple-500 to-violet-600 p-2.5 rounded-xl shadow-lg shadow-purple-500/20">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
               </div>
-              <span className="font-display font-bold text-xl tracking-tight">IPO Analyzer</span>
+              <div>
+                <span className="font-display font-bold text-lg tracking-tight text-white">IPO Analyzer</span>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-medium">Premium</p>
+              </div>
             </div>
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-3 py-6 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href);
             return (
               <Link key={item.href} href={item.href}>
-                <div className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer",
-                  isActive(item.href) 
-                    ? "bg-primary/10 text-primary font-medium" 
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}>
+                <div 
+                  className={cn(
+                    "relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group cursor-pointer overflow-hidden",
+                    active 
+                      ? "text-white" 
+                      : "text-white/50 hover:text-white/80 hover:bg-white/[0.03]"
+                  )}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  {active && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-violet-500/10 to-transparent rounded-xl" />
+                  )}
+                  {active && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-purple-400 to-violet-500 rounded-r-full" />
+                  )}
                   <Icon className={cn(
-                    "w-5 h-5 transition-colors",
-                    isActive(item.href) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                    "w-5 h-5 relative z-10 transition-colors",
+                    active ? "text-purple-400" : "text-white/40 group-hover:text-white/60"
                   )} />
-                  {item.label}
+                  <span className="relative z-10 font-medium">{item.label}</span>
                 </div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 px-4 py-3 mb-2">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-white font-bold">
-              {user.firstName?.[0] || user.email?.[0] || 'U'}
+        <div className="p-4 border-t border-white/[0.05]">
+          <div className="flex items-center gap-3 px-3 py-3 mb-3 rounded-xl bg-white/[0.02]">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-purple-500/20">
+              {user.firstName?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user.firstName || 'User'}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              <p className="text-sm font-semibold text-white truncate">{user.firstName || 'Investor'}</p>
+              <p className="text-xs text-white/40 truncate">{user.email}</p>
             </div>
           </div>
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="w-full justify-start text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             onClick={() => logout()}
+            data-testid="button-signout"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
@@ -113,47 +143,55 @@ export function Navigation() {
         </div>
       </aside>
 
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 w-full z-50 bg-background border-b border-border px-4 h-16 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 w-full z-50 glass-panel border-b border-white/[0.05] px-4 h-16 flex items-center justify-between">
         <Link href="/">
           <div className="flex items-center gap-2 cursor-pointer">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            <span className="font-display font-bold text-lg">IPO Analyzer</span>
+            <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-2 rounded-xl">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-display font-bold text-lg text-white">IPO Analyzer</span>
           </div>
         </Link>
-        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-white/70 hover:text-white hover:bg-white/5"
+          data-testid="button-mobile-menu"
+        >
           {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-background pt-20 px-4 animate-in slide-in-from-top-10 duration-200">
+        <div className="lg:hidden fixed inset-0 z-40 bg-[#030303] pt-20 px-4 animate-in fade-in duration-200">
           <nav className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
+              const active = isActive(item.href);
               return (
                 <Link key={item.href} href={item.href}>
                   <div 
                     className={cn(
-                      "flex items-center gap-3 px-4 py-4 rounded-xl border transition-colors cursor-pointer",
-                      isActive(item.href) 
-                        ? "bg-primary/5 border-primary/20 text-primary" 
-                        : "border-transparent hover:bg-muted"
+                      "flex items-center gap-3 px-4 py-4 rounded-xl transition-colors cursor-pointer",
+                      active 
+                        ? "bg-purple-500/10 text-purple-400" 
+                        : "text-white/60 hover:bg-white/[0.03] hover:text-white"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Icon className="w-5 h-5" />
-                    {item.label}
+                    <span className="font-medium">{item.label}</span>
                   </div>
                 </Link>
               );
             })}
             <Button 
-              variant="destructive" 
-              className="w-full mt-8"
+              variant="ghost"
+              className="w-full mt-8 justify-start text-red-400/80 hover:text-red-400 hover:bg-red-500/10"
               onClick={() => logout()}
             >
+              <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
           </nav>

@@ -1,6 +1,6 @@
 import { type Ipo } from "@shared/schema";
 import { format } from "date-fns";
-import { ArrowRight, Calendar, Layers, Plus, Check } from "lucide-react";
+import { ArrowRight, Calendar, Layers, Plus, Check, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAddToWatchlist, useWatchlist } from "@/hooks/use-ipos";
@@ -40,30 +40,43 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyles = (status: string) => {
     switch(status.toLowerCase()) {
-      case 'open': return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
-      case 'upcoming': return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-      default: return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700";
+      case 'open': 
+        return "badge-glow-green";
+      case 'upcoming': 
+        return "badge-glow-blue";
+      case 'closed':
+        return "bg-white/[0.05] text-white/50 border-white/[0.08]";
+      default: 
+        return "bg-white/[0.05] text-white/50 border-white/[0.08]";
     }
   };
 
   if (compact) {
     return (
       <Link href={`/ipos/${ipo.id}`}>
-        <div className="group cursor-pointer bg-card hover:bg-accent/5 rounded-xl border border-border p-4 transition-all duration-200 hover:border-primary/50">
-          <div className="flex justify-between items-start mb-2">
+        <div 
+          className="group cursor-pointer premium-card p-5 hover-lift"
+          data-testid={`card-ipo-compact-${ipo.id}`}
+        >
+          <div className="flex justify-between items-start mb-3">
             <div>
-              <h3 className="font-bold text-lg">{ipo.symbol}</h3>
-              <p className="text-sm text-muted-foreground truncate max-w-[150px]">{ipo.companyName}</p>
+              <h3 className="font-display font-bold text-lg text-white group-hover:text-purple-400 transition-colors">
+                {ipo.symbol}
+              </h3>
+              <p className="text-sm text-white/40 truncate max-w-[150px]">{ipo.companyName}</p>
             </div>
-            <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border-white/10 ${getStatusColor(ipo.status)}`}>
+            <Badge 
+              variant="outline" 
+              className={`text-[10px] font-bold uppercase tracking-[0.15em] px-2.5 py-0.5 rounded-full ${getStatusStyles(ipo.status)}`}
+            >
               {ipo.status}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
+          <div className="flex items-center gap-2 text-sm text-white/40">
             <Calendar className="w-4 h-4" />
-            {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
+            {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd MMM yyyy") : "TBA"}
           </div>
         </div>
       </Link>
@@ -71,65 +84,83 @@ export function IpoCard({ ipo, compact = false }: IpoCardProps) {
   }
 
   return (
-    <div className="group relative bg-[#0A0A0B] rounded-[2rem] border border-white/[0.05] p-8 shadow-2xl hover:shadow-[0_0_80px_-15px_rgba(139,92,246,0.4)] hover:border-primary/50 transition-all duration-700 flex flex-col h-full overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-      <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700" />
-      <div className="flex justify-between items-start mb-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+    <div 
+      className="group relative premium-card p-6 flex flex-col h-full"
+      data-testid={`card-ipo-${ipo.id}`}
+    >
+      <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      
+      <div className="flex justify-between items-start mb-5 relative z-10">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-2xl font-bold tracking-tight text-white group-hover:text-purple-400 transition-colors duration-300">
               {ipo.symbol}
             </span>
-            <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border-white/10 ${getStatusColor(ipo.status)}`}>
+            <Badge 
+              variant="outline" 
+              className={`text-[10px] font-bold uppercase tracking-[0.15em] px-2.5 py-0.5 rounded-full border ${getStatusStyles(ipo.status)}`}
+            >
               {ipo.status}
             </Badge>
           </div>
-          <h3 className="text-lg font-medium text-muted-foreground line-clamp-1">
+          <h3 className="text-base text-white/50 font-medium line-clamp-1">
             {ipo.companyName}
           </h3>
         </div>
         <Button
           size="icon"
-          variant={isWatching ? "secondary" : "outline"}
-          className={`rounded-full border-white/10 transition-all duration-500 hover:scale-110 active:scale-95 ${isWatching ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_20px_rgba(139,92,246,0.2)]' : 'hover:bg-primary/10 hover:border-primary/30'}`}
+          variant="ghost"
+          className={`rounded-full transition-all duration-300 ${
+            isWatching 
+              ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/10' 
+              : 'bg-white/[0.03] text-white/40 border border-white/[0.08] hover:bg-white/[0.06] hover:text-white/60 hover:border-white/[0.12]'
+          }`}
           onClick={handleWatch}
           disabled={isPending || isWatching}
+          data-testid={`button-watch-${ipo.id}`}
         >
           {isWatching ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         </Button>
       </div>
 
-      <div className="space-y-4 mb-6 flex-1">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white/[0.03] border border-white/[0.05] p-4 rounded-2xl backdrop-blur-sm group-hover:bg-white/[0.05] transition-colors duration-500">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-2 opacity-50">Range</p>
-            <p className="font-bold font-mono text-lg text-foreground tracking-tight">{ipo.priceRange}</p>
+      <div className="space-y-4 mb-6 flex-1 relative z-10">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="stat-card">
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1.5">Price Range</p>
+            <p className="font-display font-bold text-base text-white">{ipo.priceRange}</p>
           </div>
-          <div className="bg-white/[0.03] border border-white/[0.05] p-4 rounded-2xl backdrop-blur-sm group-hover:bg-white/[0.05] transition-colors duration-500">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-2 opacity-50">Expected</p>
-            <div className="flex items-center gap-2 font-bold text-lg text-foreground tracking-tight">
-              <Calendar className="w-4 h-4 text-primary" />
-              {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd-MM-yyyy") : "TBA"}
+          <div className="stat-card">
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-semibold mb-1.5">Expected</p>
+            <div className="flex items-center gap-2 font-display font-bold text-base text-white">
+              <Calendar className="w-3.5 h-3.5 text-purple-400" />
+              {ipo.expectedDate ? format(new Date(ipo.expectedDate), "dd MMM") : "TBA"}
             </div>
           </div>
         </div>
         
         {ipo.sector && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-md w-fit">
-            <Layers className="w-4 h-4" />
-            {ipo.sector}
+          <div className="flex items-center gap-2 text-xs text-white/40 bg-white/[0.02] border border-white/[0.05] px-3 py-2 rounded-lg w-fit">
+            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="font-medium">{ipo.sector}</span>
           </div>
         )}
 
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {ipo.description || "No description available for this offering."}
+        <p className="text-sm text-white/40 line-clamp-2 leading-relaxed">
+          {ipo.description || "Detailed prospectus analysis available upon click."}
         </p>
       </div>
 
-      <Link href={`/ipos/${ipo.id}`} className="block mt-auto">
-        <Button className="w-full h-14 rounded-2xl justify-between px-6 bg-white/[0.05] hover:bg-primary text-foreground hover:text-primary-foreground border-white/10 transition-all duration-500 group/btn font-bold tracking-tight" variant="secondary">
-          Analyze Opportunity
-          <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-2 transition-transform duration-500" />
+      <Link href={`/ipos/${ipo.id}`} className="block mt-auto relative z-10">
+        <Button 
+          className="w-full h-12 rounded-xl justify-between px-5 bg-white/[0.03] hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-violet-500/10 text-white/70 hover:text-white border border-white/[0.06] hover:border-purple-500/30 transition-all duration-300 group/btn font-semibold"
+          variant="ghost"
+          data-testid={`button-analyze-${ipo.id}`}
+        >
+          <span className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-purple-400" />
+            Analyze IPO
+          </span>
+          <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
         </Button>
       </Link>
     </div>
